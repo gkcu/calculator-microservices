@@ -1,0 +1,34 @@
+name: CI/CD Pipeline
+on: [push]  # Déclenche le pipeline à chaque push sur la branche principale
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest  # Utilise une machine virtuelle Ubuntu
+
+    steps:
+      # Étape 1 : Récupérer le code
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Étape 2 : Construire les images Docker
+      - name: Build Docker images
+        run: docker-compose build
+
+      # Étape 3 : Se connecter à Docker Hub
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      # Étape 4 : Tagger et pousser les images Docker sur Docker Hub
+      - name: Push Docker images to Docker Hub
+        run: |
+          docker tag gkcu/addition:latest gkcu/addition:$GITHUB_SHA
+          docker push gkcu/addition:$GITHUB_SHA
+
+          docker tag gkcu/subtraction:latest gkcu/subtraction:$GITHUB_SHA
+          docker push gkcu/subtraction:$GITHUB_SHA
+
+          docker tag gkcu/multiplication:latest gkcu/multiplication:$GITHUB_SHA
+          docker push gkcu/multiplication:$GITHUB_SHA
+
+          docker tag gkcu/division:latest gkcu/division:$GITHUB_SHA
+          docker push gkcu/division:$GITHUB_SHA
